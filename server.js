@@ -1,13 +1,19 @@
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const publicWebDir = path.join(__dirname, 'public');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+if (fs.existsSync(publicWebDir)) {
+  app.use(express.static(publicWebDir));
+}
 
 // Database Kosakata (N5 & N4)
 function getVocabularies() {
@@ -29,8 +35,12 @@ function getExamData() {
   }
 }
 
-// Healthcheck Endpoint
+// Healthcheck / Web App Entrypoint
 app.get('/', (req, res) => {
+  const indexHtmlPath = path.join(publicWebDir, 'index.html');
+  if (fs.existsSync(indexHtmlPath)) {
+    return res.sendFile(indexHtmlPath);
+  }
   res.json({
     message: 'API Belajar Bahasa Jepang Active!',
     status: 'online',
